@@ -1,0 +1,4 @@
+epochs: 0
+gfcf_alpha: 0.5
+gfcf_hl_dim_smooth: 512
+gfcf_hl_dim_rough: 128

@@ -1,0 +1,11 @@
+epochs: 1000
+batch_size: 2048
+lr: 1.e-3
+wd: 1.e-4
+init_std: 0.1
+keep_prob: 0.6
+A_split: False
+dropout: False
+embedding_dim: 64
+num_layers: 3
+apegnn_type: HT   # HT, APPNP

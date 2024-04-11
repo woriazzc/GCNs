@@ -1,0 +1,8 @@
+__pycache__/
+.vscode/
+
+crafts/
+logs/
+**/*.txt
+**/*.pkl
+search/log/

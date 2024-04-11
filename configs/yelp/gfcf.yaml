@@ -1,0 +1,3 @@
+epochs: 0
+gfcf_alpha: 0.3
+eig_dim: 512

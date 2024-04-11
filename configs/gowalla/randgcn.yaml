@@ -1,0 +1,7 @@
+epochs: 0
+init_std: 0.1
+keep_prob: 0.6
+A_split: False
+dropout: False
+embedding_dim: 64
+num_layers: 50

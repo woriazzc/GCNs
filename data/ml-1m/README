@@ -1,0 +1,20 @@
+Chronologically-ordered MovieLens1M dataset.
+
+Config:
+-------
+filename: ml-1m
+dataset: MovieLens1M
+kcore4user: 10
+kcore4item: 10
+star4pos: 1
+ratios: (8, 1, 1)
+
+Statistics:
+-----------
++-------+-------+---------------+--------+--------+--------+---------------------+
+| #User | #Item | #Interactions | #Train | #Valid | #Test  |       Density       |
++-------+-------+---------------+--------+--------+--------+---------------------+
+|  6040 |  3260 |     998539    | 796389 | 99549  | 102601 | 0.05071197131597124 |
++-------+-------+---------------+--------+--------+--------+---------------------+
+
+URL = "https://zenodo.org/record/7683693/files/MovieLens1M_10101811_Chron.zip"

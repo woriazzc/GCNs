@@ -1,0 +1,8 @@
+epochs: 1000
+batch_size: 2048
+lr: 1.e-3
+wd: 1.e-4
+svdgcn_type: nonparametric
+svd_dim: 15
+svdgcn_alpha: 6.
+svdgcn_beta: 2.

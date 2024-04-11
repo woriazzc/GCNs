@@ -1,0 +1,16 @@
+epochs: 1000
+batch_size: 2048
+lr: 1.e-3
+wd: 1.e-8
+init_std: 1.e-2
+embedding_dim: 64
+early_stop_patience: 100
+ultra_w1: 1.e-3
+ultra_w2: 1
+ultra_w3: 1.e-3
+ultra_w4: 1
+num_ns: 1
+w_negative: 1
+w_norm: 1.e-4
+w_ii: 5.e-4
+ultra_ii_num: 10

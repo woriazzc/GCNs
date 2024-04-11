@@ -1,0 +1,3 @@
+epochs: 0
+gfcf_alpha: 0.2   # weight of ideal low-pass filter
+eig_dim: 64
