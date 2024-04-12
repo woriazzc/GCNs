@@ -33,6 +33,7 @@ python -u main.py --dataset=ml-1m --model=gde
 python -u main.py --dataset=ml-1m --model=jgcf
 python -u main.py --dataset=ml-1m --model=freqgcn
 python -u main.py --dataset=ml-1m --model=gfcf
+python -u main.py --dataset=ml-1m --model=stablegcn
 
 python -u main.py --dataset=books --model=lightgcn
 python -u main.py --dataset=books --model=bpr
@@ -44,3 +45,4 @@ python -u main.py --dataset=yelp --model=pgsp
 python -u main.py --dataset=yelp --model=jgcf
 python -u main.py --dataset=yelp --model=apegnn
 python -u main.py --dataset=yelp --model=gfcf
+python -u main.py --dataset=yelp --model=stablegcn

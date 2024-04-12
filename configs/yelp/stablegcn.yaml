@@ -1,0 +1,13 @@
+epochs: 1000
+batch_size: 2048
+lr: 1.e-3
+wd: 1.e-4
+num_layers: 4
+svd_dim: 200
+dropout_rate: 0.3
+embedding_dim: 64
+hidden_dim: 512
+stablegcn_lmbda: 1.5
+stablegcn_alpha: 5.0
+stablegcn_upper: 0.7
+stablegcn_lower: 0.3
