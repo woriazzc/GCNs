@@ -8,4 +8,3 @@ A_split: False
 dropout: False
 embedding_dim: 64
 num_layers: 3
-aug_graph: False

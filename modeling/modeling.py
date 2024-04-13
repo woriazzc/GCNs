@@ -153,12 +153,6 @@ class LightGCN(BaseGCN):
         
         self.Graph = self.dataset.SparseGraph
 
-        self.aug_graph = getattr(args, "aug_graph", False)
-        if self.aug_graph:
-            self.augGraph = pickle.load(open(os.path.join("data", args.dataset, "aug_graph.pkl"), "rb")).cuda()
-        else:
-            self.augGraph = None
-
         self.reset_para()
     
     def reset_para(self):
@@ -189,21 +183,17 @@ class LightGCN(BaseGCN):
         """
         propagate methods for lightGCN
         """
-        if self.training and self.aug_graph:
-            Graph = self.augGraph
-        else:
-            Graph = self.Graph
         users_emb = self.user_emb.weight
         items_emb = self.item_emb.weight
         all_emb = torch.cat([users_emb, items_emb])
         light_out = all_emb
         if self.dropout:
             if self.training:
-                g_droped = self._dropout(self.keep_prob, Graph)
+                g_droped = self._dropout(self.keep_prob, self.Graph)
             else:
-                g_droped = Graph
+                g_droped = self.Graph
         else:
-            g_droped = Graph
+            g_droped = self.Graph
 
         for layer in range(1, self.num_layers + 1):
             if self.A_split:
