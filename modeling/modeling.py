@@ -31,6 +31,9 @@ class BPR(BaseRec):
         """
         super(BPR, self).__init__(dataset, args)
 
+        self.embedding_dim = args.embedding_dim
+        self.init_std = args.init_std
+        
         # User / Item Embedding
         self.user_emb = nn.Embedding(self.num_users, self.embedding_dim)
         self.item_emb = nn.Embedding(self.num_items, self.embedding_dim)
