@@ -84,6 +84,7 @@ def main(args):
             if is_improved:
                 users, items = model.get_all_pre_embedding()
                 users, items = to_np(users), to_np(items)
+                os.makedirs("crafts", exist_ok=True)
                 np.save(f'crafts/{args.dataset}_{args.model}{"" if args.suffix == "" else "_"}{args.suffix}_users.npy', users)
                 np.save(f'crafts/{args.dataset}_{args.model}{"" if args.suffix == "" else "_"}{args.suffix}_items.npy', items)
                 try:
@@ -117,7 +118,7 @@ if __name__ == '__main__':
         avg_eval_dict = avg_dict(eval_dicts)
 
         logger.log('=' * 60)
-        Evaluator.print_final_result(logger, avg_eval_dict)
+        Evaluator.print_final_result(logger, avg_eval_dict, prefix="avg ")
     else:
         logger.log_args(args)
         seed_all(args.seed)
