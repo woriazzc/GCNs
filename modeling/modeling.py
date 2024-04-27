@@ -50,7 +50,7 @@ class BPR(BaseRec):
         ----------
         batch_user : 1-D LongTensor (batch_size)
         batch_pos_item : 1-D LongTensor (batch_size)
-        batch_neg_item : 1-D LongTensor (batch_size)
+        batch_neg_item : 2-D LongTensor (batch_size, num_ns)
 
         Returns
         -------
@@ -58,12 +58,12 @@ class BPR(BaseRec):
             Model output to calculate its loss function
         """
         
-        u = self.user_emb(batch_user)
-        i = self.item_emb(batch_pos_item)
-        j = self.item_emb(batch_neg_item)
+        u = self.user_emb(batch_user)       # batch_size, dim
+        i = self.item_emb(batch_pos_item)   # batch_size, dim
+        j = self.item_emb(batch_neg_item)   # batch_size, num_ns, dim
         
-        pos_score = (u * i).sum(dim=1, keepdim=True)
-        neg_score = (u * j).sum(dim=1, keepdim=True)
+        pos_score = (u * i).sum(dim=1, keepdim=True)    # batch_size, 1
+        neg_score = torch.bmm(j, u.unsqueeze(-1)).squeeze(-1)       # batch_size, num_ns
 
         return pos_score, neg_score
 
@@ -80,7 +80,8 @@ class BPR(BaseRec):
         loss : float
         """
         pos_score, neg_score = output[0], output[1]
-        loss = -F.logsigmoid(pos_score - neg_score).sum()
+        pos_score = pos_score.expand_as(neg_score)  # batch_size, num_ns
+        loss = -F.logsigmoid(pos_score - neg_score).mean(1).sum()
         return loss
 
     def forward_multi_items(self, batch_user, batch_items):
@@ -96,13 +97,10 @@ class BPR(BaseRec):
         score : 2-D FloatTensor (batch_size x k)
         """
 
-        batch_user = batch_user.unsqueeze(-1)
-        batch_user = torch.cat(batch_items.size(1) * [batch_user], 1)
-        
-        u = self.user_emb(batch_user)		# batch_size x k x dim
+        u = self.user_emb(batch_user)		# batch_size x dim
         i = self.item_emb(batch_items)		# batch_size x k x dim
         
-        score = (u * i).sum(dim=-1, keepdim=False)
+        score = torch.bmm(i, u.unsqueeze(-1)).squeeze(-1)   # batch_size, k
         
         return score
 
@@ -337,10 +335,10 @@ class UltraGCN(BPR):
             pos_weight = self.w1 * torch.ones(len(pos_items)).to(device)
         
         if self.w4 > 0:
-            neg_weight = torch.mul(self.constraint_mat['beta_uD'][users], self.constraint_mat['beta_iD'][neg_items]).to(device)
+            neg_weight = torch.mul(torch.repeat_interleave(self.constraint_mat['beta_uD'][users], neg_items.size(1)), self.constraint_mat['beta_iD'][neg_items.flatten()]).to(device)
             neg_weight = self.w3 + self.w4 * neg_weight
         else:
-            neg_weight = self.w3 * torch.ones(len(neg_items)).to(device)
+            neg_weight = self.w3 * torch.ones(neg_items.size(0) * neg_items.size(1)).to(device)
 
         weight = torch.cat((pos_weight, neg_weight))
         return weight
@@ -349,7 +347,7 @@ class UltraGCN(BPR):
         device = self.get_device()
         
         neg_labels = torch.zeros(neg_scores.size()).to(device)
-        neg_loss = F.binary_cross_entropy_with_logits(neg_scores, neg_labels, weight=omega_weight[len(pos_scores):], reduction='none')
+        neg_loss = F.binary_cross_entropy_with_logits(neg_scores, neg_labels, weight=omega_weight[len(pos_scores):].reshape(neg_scores.size()), reduction='none').mean(dim = -1)
         
         pos_labels = torch.ones(pos_scores.size()).to(device)
         pos_loss = F.binary_cross_entropy_with_logits(pos_scores, pos_labels, weight=omega_weight[:len(pos_scores)], reduction='none')
@@ -381,20 +379,19 @@ class UltraGCN(BPR):
         ----------
         batch_user : 1-D LongTensor (batch_size)
         batch_pos_item : 1-D LongTensor (batch_size)
-        batch_neg_item : 1-D LongTensor (batch_size)
+        batch_neg_item : 2-D LongTensor (batch_size, num_ns)
 
         Returns
         -------
         output : 
             Model output to calculate its loss function
         """
-        user_embeds = self.user_emb(batch_user)
-        pos_embeds = self.item_emb(batch_pos_item)
-        neg_embeds = self.item_emb(batch_neg_item)
+        user_embeds = self.user_emb(batch_user) # batch_size, dim
+        pos_embeds = self.item_emb(batch_pos_item)  # batch_size, dim
+        neg_embeds = self.item_emb(batch_neg_item)  # batch_size, num_ns, dim
       
         pos_score = (user_embeds * pos_embeds).sum(dim=-1) # batch_size
-        user_embeds = user_embeds.unsqueeze(1)
-        neg_score = (user_embeds * neg_embeds).sum(dim=-1) # batch_size
+        neg_score = torch.bmm(neg_embeds, user_embeds.unsqueeze(-1)).squeeze(-1)       # batch_size, num_ns
         return pos_score, neg_score, batch_user, batch_pos_item, batch_neg_item
 
     def get_loss(self, output):
@@ -650,8 +647,8 @@ class GDE(BaseGCN):
         i = all_items[batch_pos_item]
         j = all_items[batch_neg_item]
         
-        pos_score = (u * i).sum(dim=1, keepdim=True)
-        neg_score = (u * j).sum(dim=1, keepdim=True)
+        pos_score = (u * i).sum(dim=1, keepdim=True)    # batch_size, 1
+        neg_score = torch.bmm(j, u.unsqueeze(-1)).squeeze(-1)       # batch_size, num_ns
 
         neg_weight = (1. - (1. - neg_score.sigmoid().clamp(max=0.99)).log10()).detach()
         neg_score = neg_weight * neg_score
@@ -1167,22 +1164,26 @@ class StableGCN(BaseGCN):
         pre_i = pre_items[batch_pos_item]
         pre_j = pre_items[batch_neg_item]
         
-        pre_pos_score = (pre_u * pre_i).sum(dim=1, keepdim=True)
-        pre_neg_score = (pre_u * pre_j).sum(dim=1, keepdim=True)
+        pre_pos_score = (pre_u * pre_i).sum(dim=1, keepdim=True)    # batch_size, 1
+        pre_neg_score = torch.bmm(pre_j, pre_u.unsqueeze(-1)).squeeze(-1)       # batch_size, num_ns
 
         post_u = post_users[batch_user]
         post_i = post_items[batch_pos_item]
         post_j = post_items[batch_neg_item]
         
-        post_pos_score = (post_u * post_i).sum(dim=1, keepdim=True)
-        post_neg_score = (post_u * post_j).sum(dim=1, keepdim=True)
+        post_pos_score = (post_u * post_i).sum(dim=1, keepdim=True)    # batch_size, 1
+        post_neg_score = torch.bmm(post_j, post_u.unsqueeze(-1)).squeeze(-1)       # batch_size, num_ns
 
         return pre_pos_score, pre_neg_score, post_pos_score, post_neg_score
     
     def get_loss(self, output):
         pre_pos_score, pre_neg_score, post_pos_score, post_neg_score = output
-        loss1 = -F.logsigmoid(post_pos_score - post_neg_score).sum()
-        loss2 = -F.logsigmoid(pre_pos_score - pre_neg_score).sum()
+
+        pre_pos_score = pre_pos_score.expand_as(pre_neg_score)  # batch_size, num_ns
+        post_pos_score = post_pos_score.expand_as(post_neg_score)  # batch_size, num_ns
+
+        loss1 = -F.logsigmoid(post_pos_score - post_neg_score).mean(1).sum()
+        loss2 = -F.logsigmoid(pre_pos_score - pre_neg_score).mean(1).sum()
         
         weight = self.upper - (self.T_cur / self.T_max) * (self.upper - self.lower)
         self.T_cur += 1

@@ -82,18 +82,20 @@ def main(args):
             if early_stop:
                 break
             if is_improved:
-                users, items = model.get_all_pre_embedding()
-                users, items = to_np(users), to_np(items)
-                os.makedirs("crafts", exist_ok=True)
-                np.save(f'crafts/{args.dataset}_{args.model}{"" if args.suffix == "" else "_"}{args.suffix}_users.npy', users)
-                np.save(f'crafts/{args.dataset}_{args.model}{"" if args.suffix == "" else "_"}{args.suffix}_items.npy', items)
                 try:
-                    users, items = model.get_all_post_embedding()
+                    users, items = model.get_all_pre_embedding()
                     users, items = to_np(users), to_np(items)
-                    np.save(f'crafts/{args.dataset}_{args.model}{"" if args.suffix == "" else "_"}{args.suffix}_post_users.npy', users)
-                    np.save(f'crafts/{args.dataset}_{args.model}{"" if args.suffix == "" else "_"}{args.suffix}_post_items.npy', items)
+                    os.makedirs("crafts", exist_ok=True)
+                    np.save(f'crafts/{args.dataset}_{args.model}{"" if args.suffix == "" else "_"}{args.suffix}_pre_users.npy', users)
+                    np.save(f'crafts/{args.dataset}_{args.model}{"" if args.suffix == "" else "_"}{args.suffix}_pre_items.npy', items)
                 except:
                     pass
+                
+                users, items = model.get_all_embedding()
+                users, items = to_np(users), to_np(items)
+                np.save(f'crafts/{args.dataset}_{args.model}{"" if args.suffix == "" else "_"}{args.suffix}_post_users.npy', users)
+                np.save(f'crafts/{args.dataset}_{args.model}{"" if args.suffix == "" else "_"}{args.suffix}_post_items.npy', items)
+                
     
     eval_dict = evaluator.eval_dict
     Evaluator.print_final_result(logger, eval_dict)
