@@ -22,6 +22,7 @@ python -u main.py --dataset=gowalla --model=lgcn
 python -u main.py --dataset=gowalla --model=freqgcn
 python -u main.py --dataset=gowalla --model=gfcf
 python -u main.py --dataset=gowalla --model=stablegcn
+python -u main.py --dataset=gowalla --model=simplex
 
 python -u main.py --dataset=sports --model=lightgcn
 
