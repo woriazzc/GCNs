@@ -8,3 +8,5 @@ logs/
 search/log/
 *.log
 search/yamls/
+
+visualize.ipynb
