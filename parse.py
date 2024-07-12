@@ -51,3 +51,4 @@ Merge yaml and cmd
 # Read from configs/<dataset>/<model>.yaml
 config_path = os.path.join(CONFIG_DIR, args.dataset.lower(), args.model.lower() + '.yaml')
 args = parse_cfg(args, config_path, args.cfg)
+os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_id)

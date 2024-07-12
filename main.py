@@ -104,7 +104,6 @@ def main(args):
 
 
 if __name__ == '__main__':
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpu_id)
     logger = Logger(LOG_DIR, args.dataset, args.model, args.suffix, args.no_log)
 
     if args.run_all:
