@@ -140,9 +140,6 @@ class BaseGCN(BaseRec):
         score : 2-D FloatTensor (batch_size x k)
         """
         all_users, all_items = self.computer()
-
-        batch_user = batch_user.unsqueeze(-1)
-        batch_user = torch.cat(batch_items.size(1) * [batch_user], 1)
         
         u = all_users[batch_user]		# batch_size x dim
         i = all_items[batch_items]		# batch_size x k x dim
