@@ -224,10 +224,10 @@ class implicit_CF_dataset(data.Dataset):
         if self.Graph is not None:
             return self.Graph
         
-        # f_graph = os.path.join("data", self.dataset, "Graph.pkl")
-        # if os.path.exists(f_graph):
-        #     self.Graph = pickle.load(open(f_graph, "rb")).cuda()
-        #     return self.Graph
+        f_graph = os.path.join("data", self.dataset, "Graph.pkl")
+        if os.path.exists(f_graph):
+            self.Graph = pickle.load(open(f_graph, "rb")).cuda()
+            return self.Graph
         
         config = yaml.load(open(os.path.join("data", self.dataset, 'config.yaml'), 'r'), Loader=yaml.FullLoader)
         if "large" in config and config["large"] == True:
@@ -235,7 +235,7 @@ class implicit_CF_dataset(data.Dataset):
         else:
             self.Graph = self._construct_small_graph()
         
-        # pickle.dump(self.Graph, open(f_graph, "wb"))
+        pickle.dump(self.Graph, open(f_graph, "wb"))
         self.Graph = self.Graph.cuda()
         return self.Graph
 
